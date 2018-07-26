@@ -1,4 +1,4 @@
-package com.cg.walletApp.controllers;
+ package com.cg.walletApp.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.cg.walletApp.beans.Customer;
 import com.cg.walletApp.beans.Transactions;
+import com.cg.walletApp.exception.InsufficientBalanceException;
 
 @Controller
 public class URIController {
@@ -19,6 +20,11 @@ public class URIController {
 	@RequestMapping(value="/login")
 	public String getLoginPage() {
 		return "loginPage";
+	}
+	
+	@RequestMapping(value="/update")
+	public String getUpdatePage() {
+		return "updatePage";
 	}
 	
 	@RequestMapping(value="/registration")
@@ -62,5 +68,11 @@ public class URIController {
 	public Transactions getTransactions() {
 		return new Transactions();
 	}
-
+	
+	
+	@ModelAttribute("InsufficientBalanceException")
+	public InsufficientBalanceException getInsufficentBalanceException() {
+		return new InsufficientBalanceException();
+	}
+	
 }

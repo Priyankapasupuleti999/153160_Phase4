@@ -5,6 +5,7 @@
 
 <a href = "login">login</a></br>
 <a href = "registration">registration</a>
+<a href = "update">Update</a>
 </div>
 </body>
 </html>

@@ -5,14 +5,15 @@ import java.util.List;
 
 import com.cg.walletApp.beans.Customer;
 import com.cg.walletApp.beans.Transactions;
+import com.cg.walletApp.exception.CustomerDetailsNotFoundException;
 import com.cg.walletApp.exception.InsufficientBalanceException;
 import com.cg.walletApp.exception.InvalidInputException;
 
 public interface WalletService {
 	//pass readymade customer object
-	public Customer createAccount(Customer customer);
+	public Customer createAccount(Customer customer) throws InvalidInputException;
 	
-	public Customer showBalance (String mobileNo) throws InvalidInputException;
+	public Customer showBalance (String mobileNo) throws CustomerDetailsNotFoundException;
 	
 	public Customer fundTransfer (String sourceMobileNo,String targetMobileNo, BigDecimal amount) throws InvalidInputException, InsufficientBalanceException;
 	
@@ -21,4 +22,8 @@ public interface WalletService {
 	public Customer withdrawAmount(String mobileNo, BigDecimal amount) throws InvalidInputException, InsufficientBalanceException;
 
 	public List<Transactions> getAllTransactions(String mobileNo) throws InvalidInputException;
+	
+	public List<Customer> getAllCustomers() throws InvalidInputException;
+	
+	public List<Customer> getCustomer() throws InvalidInputException;
 }

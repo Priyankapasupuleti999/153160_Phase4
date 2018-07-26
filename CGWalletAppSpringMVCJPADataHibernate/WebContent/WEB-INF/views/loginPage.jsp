@@ -1,32 +1,36 @@
 <%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
-
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<style>
+.error {
+	color: red;
+	font-weight: bold;
+}
+</style>
 </head>
 <body>
-
 	<h1>Login</h1>
-
-	
-	<table cellpadding="6" cellspacing="2" allign="center">
+	<form action="findCustomer" method="post" name="customerFrm">
+	 <table cellpadding="6" cellspacing="2" allign="center">
 		
-			<!-- registerCustomer method is called -->
-			<form:form action="findCustomer" method="post" modelAttribute="customer">
+		<tr>
+			<td>Mobile Number</td>
+			<td><input type="text" name="mobileNo" /></td>
+		</tr>
 
-				<tr>
-					<td>Mobile Number</td>
-					<td><form:input path="mobileNo" size="30" /></td>
-					<td><form:errors path="mobileNo" cssClass="error" /></td>
-				</tr>
-
-				<tr>
-					<td><input type="submit" name="submit" value="login" />
-					<td><input type="reset" name="submit" value="Clear Form" />
-				</tr>
-			</form:form>
-		</table>
+		<tr>
+			<td><input type="submit" name="submit" value="login" /></td>
+			<td><input type="reset" name="submit" value="Clear Form" /></td>
+		</tr>
+		
+	</table>
+	</form>
+	
+	<div>
+	<font color="red">
+	  <c:if test = "${not empty errorPage}">${errorPage}</c:if>
+	</font></div>
 </body>
 </html>

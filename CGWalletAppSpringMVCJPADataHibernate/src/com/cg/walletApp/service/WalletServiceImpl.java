@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.cg.walletApp.beans.Customer;
 import com.cg.walletApp.beans.Transactions;
 import com.cg.walletApp.beans.Wallet;
+import com.cg.walletApp.exception.CustomerDetailsNotFoundException;
 import com.cg.walletApp.exception.InsufficientBalanceException;
 import com.cg.walletApp.exception.InvalidInputException;
 import com.cg.walletApp.repo.TransactionRepo;
@@ -27,20 +28,22 @@ public class WalletServiceImpl implements WalletService {
 
 	//@Transactional(propagation=Propagation.REQUIRED)
 	@Override
-	public Customer createAccount(Customer customer) {
+	public Customer createAccount(Customer customer) throws InvalidInputException{
+		if(repo.findOne(customer.getMobileNo()) != null)
+			throw new InvalidInputException("Customer with this mobile number is already present");
 
 		return repo.save(customer);
 	}
 
 	@Override
-	public Customer showBalance(String mobileNo) throws InvalidInputException {
+	public Customer showBalance(String mobileNo) throws CustomerDetailsNotFoundException {
 
 		Customer customer=repo.findOne(mobileNo);
 
 		if(customer!=null)
 			return customer;
 		else
-			throw new InvalidInputException("Invalid mobile no ");
+			throw new CustomerDetailsNotFoundException("Invalid mobile no ");
 	}
 
 	@Override
@@ -61,28 +64,25 @@ public class WalletServiceImpl implements WalletService {
 		if(amount.compareTo(new BigDecimal(0)) <= 0) 
 			throw new InvalidInputException("Enter valid amount");
 
-		if(isValid(mobileNo)) {
-			Customer customer = repo.findOne(mobileNo);
-			Wallet wallet = customer.getWallet();
+		Customer customer = repo.findOne(mobileNo);
+		Wallet wallet = customer.getWallet();
 
-			wallet.setBalance(wallet.getBalance().add(amount));
-			customer.setWallet(wallet);
+		wallet.setBalance(wallet.getBalance().add(amount));
+		customer.setWallet(wallet);
 
-			Transactions transactions = new Transactions();
+		Transactions transactions = new Transactions();
 
-			transactions.setMobileNo(mobileNo);
-			transactions.setAmount(amount);
-			transactions.setTransactionType("Deposit ");
-			transactions.setTransactionStatus("Success ");
-			Date date = new Date();
-			transactions.setDateResult(date);
+		transactions.setMobileNo(mobileNo);
+		transactions.setAmount(amount);
+		transactions.setTransactionType("Deposit ");
+		transactions.setTransactionStatus("Success ");
+		Date date = new Date();
+		transactions.setDateResult(date);
 
-			transactionRepo.save(transactions);
-			repo.save(customer);
+		transactionRepo.save(transactions);
+		repo.save(customer);
 
-			return customer;
-		}
-		else throw new InvalidInputException("Enter valid mobile number");
+		return customer;
 	}
 
 	public boolean isValid(String mobileNo) {
@@ -94,7 +94,7 @@ public class WalletServiceImpl implements WalletService {
 	}
 
 	private boolean isValidName(String name) {
-	
+
 		if( name == null || name.trim().isEmpty() || !name.matches("^[a-zA-Z]{1,30}$"))
 			return false;
 		return true;
@@ -106,47 +106,54 @@ public class WalletServiceImpl implements WalletService {
 		if(amount.compareTo(new BigDecimal(0)) <= 0) 
 			throw new InvalidInputException("Enter valid amount");
 
-		if(isValid(mobileNo)) {
+		Customer customer = repo.findOne(mobileNo);
+		Wallet wallet = customer.getWallet();
 
-			Customer customer = repo.findOne(mobileNo);
-			Wallet wallet = customer.getWallet();
+		if(amount.compareTo(wallet.getBalance()) > 0) 
+			throw new InsufficientBalanceException("Amount is not sufficient in your account");
 
-			if(amount.compareTo(wallet.getBalance()) > 0) 
-				throw new InsufficientBalanceException("Amount is not sufficient in your account");
+		wallet.setBalance(wallet.getBalance().subtract(amount));
+		customer.setWallet(wallet);
 
-			wallet.setBalance(wallet.getBalance().subtract(amount));
-			customer.setWallet(wallet);
+		Transactions transactions = new Transactions();
 
-			Transactions transactions = new Transactions();
-			
-			transactions.setMobileNo(mobileNo);
-			transactions.setAmount(amount);
-			transactions.setTransactionType("Withdraw ");
-			transactions.setTransactionStatus("Success ");
-			Date date = new Date();
-			transactions.setDateResult(date);
+		transactions.setMobileNo(mobileNo);
+		transactions.setAmount(amount);
+		transactions.setTransactionType("Withdraw ");
+		transactions.setTransactionStatus("Success ");
+		Date date = new Date();
+		transactions.setDateResult(date);
 
-			transactionRepo.save(transactions);
-			repo.save(customer);
+		transactionRepo.save(transactions);
+		repo.save(customer);
 
-			return customer;
-		}
-		else throw new InvalidInputException("Enter valid mobile number");
+		return customer;
+
 	}
 
 	@Override
 	public List<Transactions> getAllTransactions(String mobileNo) throws InvalidInputException {
 
-		if(!isValid(mobileNo))
-			throw new InvalidInputException("Invalid mobile number");
-		else {
+		
 			List<Transactions> transaction = transactionRepo.findByMobileNo(mobileNo);
-			
+
 			if( transaction != null)
 				return transaction;
-			
+
 			else
 				throw new InvalidInputException("Invalid input");
-		}
+		
+	}
+
+	@Override
+	public List<Customer> getAllCustomers() throws InvalidInputException {
+
+		return repo.findAll();
+	}
+
+	@Override
+	public List<Customer> getCustomer() throws InvalidInputException {
+		BigDecimal amount = new BigDecimal(1000);
+		return repo.findCustomers(amount);
 	}
 }
